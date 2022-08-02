@@ -2,11 +2,11 @@ package pl.sdacademy.ConferenceRoomReservationSystem.organization;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import pl.sdacademy.ConferenceRoomReservationSystem.SortType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +24,13 @@ class OrganizationController {
     }
 
     @GetMapping
-    List<Organization> getAll() {
-        return organizationService.getAllOrganizations();
+    List<Organization> getAll(@RequestParam(defaultValue = "ASC") SortType sortType) {
+        return organizationService.getAllOrganizations(sortType);
+    }
+
+    @GetMapping("/{name}")
+    Organization getById(@PathVariable String name) {
+        return organizationService.getOrganization(name);
     }
 
     @PostMapping
@@ -59,5 +64,10 @@ class OrganizationController {
     ResponseEntity<Object> handleNoSuchElementException(
             NoSuchElementException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

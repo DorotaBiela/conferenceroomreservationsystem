@@ -5,12 +5,18 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+interface AddOrganization {
+}
+
+interface UpdateOrganization {
+}
+
 @Entity
 public class Organization {
 
     @Id
     @Size(min = 2, max = 20, groups = {AddOrganization.class, UpdateOrganization.class})
-    @NotBlank (groups = AddOrganization.class)
+    @NotBlank(groups = AddOrganization.class)
     private String name;
     private String description;
 
@@ -38,7 +44,3 @@ public class Organization {
         this.description = description;
     }
 }
-
-interface AddOrganization { }
-
-interface UpdateOrganization { }
