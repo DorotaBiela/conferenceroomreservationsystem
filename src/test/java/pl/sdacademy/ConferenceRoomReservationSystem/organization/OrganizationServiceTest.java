@@ -76,7 +76,7 @@ class OrganizationServiceTest {
     void when_delete_existing_organization_then_it_should_be_removed_from_the_repo() {
         //given
         String name = "Intive";
-        Long id = 1L;
+        long id = 1L;
         Organization arg = new Organization(id, name, "IT company");
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.of(arg));
 
@@ -155,6 +155,27 @@ class OrganizationServiceTest {
         //then
         assertEquals(arg, result);
         Mockito.verify(organizationRepository).findByName(name);
+    }
+
+    @Test
+    void when_update_organization_name_which_is_not_unique_then_exception_should_be_thrown() {
+
+        //given
+        String name1 = "Intive";
+        Organization existingOrg1 = new Organization(name1, "Delivery company");
+        String name2 = "Tieto";
+        Organization existingOrg2 = new Organization(name2, "IT company");
+
+        Organization updateOrganization = new Organization(name2, "Delivery company");
+        Mockito.when(organizationRepository.findByName(name1)).thenReturn(Optional.of(existingOrg1));
+        Mockito.when(organizationRepository.findByName(name2)).thenReturn(Optional.of(existingOrg2));
+
+        //when
+        //then
+        assertThrows(IllegalArgumentException.class, () -> {
+           organizationService.updateOrganization(name1, updateOrganization);
+        });
+        Mockito.verify(organizationRepository, Mockito.never()).save(updateOrganization);
     }
 
     @TestConfiguration

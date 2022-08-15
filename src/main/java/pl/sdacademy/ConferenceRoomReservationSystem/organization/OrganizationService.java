@@ -41,11 +41,17 @@ class OrganizationService {
     }
 
     Organization updateOrganization(String name, Organization organization) {
-        Organization organizationToUpdate = organizationRepository.findByName(name).orElseThrow(() -> new NoSuchElementException(""));
+        Organization organizationToUpdate = organizationRepository
+                .findByName(name)
+                .orElseThrow(() -> new NoSuchElementException(""));
         if (organization.getDescription() != null) {
             organizationToUpdate.setDescription(organization.getDescription());
         }
         if (organization.getName() != null && !organization.getName().equals(organizationToUpdate.getName())) {
+            organizationRepository.findByName(organization.getName())
+                            .ifPresent(o -> {
+                                throw new IllegalArgumentException("Organization already exists!");
+                            });
             organizationToUpdate.setName(organization.getName());
         }
         return organizationRepository.save(organizationToUpdate);
