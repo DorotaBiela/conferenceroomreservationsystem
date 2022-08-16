@@ -24,9 +24,11 @@ import pl.sdacademy.ConferenceRoomReservationSystem.organization.args.ValidateUp
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(OrganizationController.class)
@@ -64,7 +66,7 @@ class OrganizationControllerTest {
 
     @ParameterizedTest
     @ArgumentsSource(ValidateAddOrganizationArgumentProvider.class)
-    void when_add_invalid_organization_arg1_then_exception_should_be_thrown_with_arg2_details(String arg1, String arg2) throws Exception {
+    void when_add_invalid_organization_arg1_then_exception_should_be_thrown_with_arg2_details(String arg1, List<String> arg2) throws Exception {
         //given
         //when
         //then
@@ -73,14 +75,16 @@ class OrganizationControllerTest {
                         .content(arg1)
                 ).andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", equalTo(arg2)));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(400)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", equalToIgnoringCase("Bad Request")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.details.name", equalTo(arg2)));
     }
 
     @Test
     void when_add_already_existing_organization_then_exception_should_be_thrown() throws Exception {
         //given
         Organization organization = new Organization("Intive", "IT company");
-        Mockito.when(organizationService.addOrganization(organization)).thenThrow(new IllegalArgumentException("Organization already exists!"));
+        Mockito.when(organizationService.addOrganization(organization)).thenThrow(new IllegalArgumentException("organization already exists!"));
 
         //when
         //then
@@ -95,7 +99,10 @@ class OrganizationControllerTest {
                                         """
                         )
                 ).andExpect(MockMvcResultMatchers.status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(400)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", equalTo("Bad Request")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.details", equalTo("organization already exists!")));
     }
 
     @Test
@@ -126,18 +133,21 @@ class OrganizationControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/organizations/" + name)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(404)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", equalTo("Not Found")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.details", equalTo("No organization found")));
     }
 
     @ParameterizedTest
     @ArgumentsSource(ValidateUpdateOrganizationArgumentProvider.class)
-    void when_update_organization_arg1_then_validation_should_happen(String arg1, boolean result, String arg2) throws Exception {
+    void when_update_organization_arg1_then_validation_should_happen(String arg1, boolean result, List<String> arg2) throws Exception {
         //given
         String existingOrgName = "Tieto";
 
         //when
         //then
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.put("/organizations/"+existingOrgName)
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.put("/organizations/" + existingOrgName)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(arg1)
         );
@@ -146,7 +156,9 @@ class OrganizationControllerTest {
         } else {
             resultActions.andExpect(MockMvcResultMatchers.status().is4xxClientError())
                     .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.name", equalTo(arg2)));
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(400)))
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.message", equalToIgnoringCase("Bad Request")))
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.details.name", equalTo(arg2)));
         }
     }
 
@@ -171,7 +183,10 @@ class OrganizationControllerTest {
                         )
                 )
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(404)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", equalTo("Not Found")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.details", equalTo("No organization found")));
     }
 
     @Test

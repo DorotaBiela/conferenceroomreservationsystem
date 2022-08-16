@@ -4,6 +4,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 public class ValidateAddOrganizationArgumentProvider implements ArgumentsProvider {
@@ -12,29 +13,29 @@ public class ValidateAddOrganizationArgumentProvider implements ArgumentsProvide
         return Stream.of(
                 Arguments.of(
                         """
-                                {
-                                  "description": "IT company",
-                                  "name": "I"
-                                }
-                                """,
-                        "size must be between 2 and 20"
+                                        {
+                                          "description": "IT company",
+                                          "name": "I"
+                                        }
+                                        """,
+                        Arrays.asList("size must be between 2 and 20")
                 ),
                 Arguments.of(
                         """
-                                {
-                                 "description": "IT company",
-                                  "name": ""
-                                }
-                                """,
-                        "must not be blank"
+                                         {
+                                           "description": "IT company",
+                                           "name": ""
+                                         }
+                                         """,
+                        Arrays.asList("size must be between 2 and 20","must not be blank")
                 ),
                 Arguments.of(
                         """
-                                {
-                                 "description": "IT company"
-                                }
-                                """,
-                        "must not be blank"
+                                         {
+                                           "description": "IT company"
+                                         }
+                                         """,
+                        Arrays.asList("must not be blank")
                 )
         );
     }
