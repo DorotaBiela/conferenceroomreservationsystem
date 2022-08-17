@@ -27,6 +27,8 @@ class OrganizationServiceTest {
 
     @MockBean
     OrganizationRepository organizationRepository;
+    @MockBean
+    OrganizationTransformer organizationTransformer;
     @Autowired
     OrganizationService organizationService;
 
@@ -48,27 +50,32 @@ class OrganizationServiceTest {
     void when_add_invalid_organization_then_exception_should_be_thrown() {
         //given
         String name = "Intive";
+        OrganizationDto argDto = new OrganizationDto(name, "IT company");
         Organization arg = new Organization(name, "IT company");
+        Mockito.when(organizationTransformer.fromDto(argDto)).thenReturn(arg);
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.of(arg));
 
         //when
         //then
-        assertThrows(IllegalArgumentException.class, () -> organizationService.addOrganization(arg));
+        assertThrows(IllegalArgumentException.class, () -> organizationService.addOrganization(argDto));
     }
 
     @Test
     void when_add_new_organization_then_it_should_be_added_to_repo() {
         //given
         String name = "Intive";
+        OrganizationDto argDto = new OrganizationDto(name, "IT company");
         Organization arg = new Organization(name, "IT company");
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.empty());
         Mockito.when(organizationRepository.save(arg)).thenReturn(arg);
+        Mockito.when(organizationTransformer.fromDto(argDto)).thenReturn(arg);
+        Mockito.when(organizationTransformer.toDto(arg)).thenReturn(argDto);
 
         //when
-        Organization result = organizationService.addOrganization(arg);
+        OrganizationDto result = organizationService.addOrganization(argDto);
 
         //then
-        assertEquals(arg, result);
+        assertEquals(argDto, result);
         Mockito.verify(organizationRepository).save(arg);
     }
 
@@ -76,15 +83,17 @@ class OrganizationServiceTest {
     void when_delete_existing_organization_then_it_should_be_removed_from_the_repo() {
         //given
         String name = "Intive";
-        long id = 1L;
+        Long id = 1L;
         Organization arg = new Organization(id, name, "IT company");
+        OrganizationDto argDto = new OrganizationDto(id, name, "IT company");
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.of(arg));
+        Mockito.when(organizationTransformer.toDto(arg)).thenReturn(argDto);
 
         //when
-        Organization result = organizationService.deleteOrganization(name);
+        OrganizationDto result = organizationService.deleteOrganization(name);
 
         //then
-        assertEquals(arg, result);
+        assertEquals(argDto, result);
         Mockito.verify(organizationRepository).deleteById(id);
     }
 
@@ -103,12 +112,14 @@ class OrganizationServiceTest {
     void when_update_non_existing_organization_then_exception_should_be_thrown() {
         //given
         String name = "Intive";
+        OrganizationDto argDto = new OrganizationDto(name, "IT company");
         Organization arg = new Organization(name, "IT company");
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.empty());
+        Mockito.when(organizationTransformer.fromDto(argDto)).thenReturn(arg);
 
         //when
         //then
-        assertThrows(NoSuchElementException.class, () -> organizationService.updateOrganization(name, arg));
+        assertThrows(NoSuchElementException.class, () -> organizationService.updateOrganization(name, argDto));
     }
 
     @ParameterizedTest
@@ -116,19 +127,23 @@ class OrganizationServiceTest {
     void when_update_arg_1_organization_with_arg_2_data_then_organization_should_be_updated_to_arg_3(
             String name,
             Organization arg1,
-            Organization arg2,
-            Organization arg3
+            OrganizationDto arg2,
+            Organization arg3,
+            Organization arg4,
+            OrganizationDto arg5
     ) {
         //given
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.of(arg1));
-        Mockito.when(organizationRepository.save(arg1)).thenReturn(arg3);
+        Mockito.when(organizationRepository.save(arg1)).thenReturn(arg4);
+        Mockito.when(organizationTransformer.toDto(arg4)).thenReturn(arg5);
+        Mockito.when(organizationTransformer.fromDto(arg2)).thenReturn(arg3);
 
         //when
-        Organization result = organizationService.updateOrganization(name, arg2);
+        OrganizationDto result = organizationService.updateOrganization(name, arg2);
 
         //then
-        assertEquals(arg3, result);
-        Mockito.verify(organizationRepository).save(arg3);
+        assertEquals(arg5, result);
+        Mockito.verify(organizationRepository).save(arg4);
     }
 
     @Test
@@ -147,33 +162,35 @@ class OrganizationServiceTest {
         //given
         String name = "Intive";
         Organization arg = new Organization(name, "IT company");
+        OrganizationDto argDto = new OrganizationDto(name, "IT company");
         Mockito.when(organizationRepository.findByName(name)).thenReturn(Optional.of(arg));
+        Mockito.when(organizationTransformer.toDto(arg)).thenReturn(argDto);
 
         //when
-        Organization result = organizationService.getOrganization(name);
+        OrganizationDto result = organizationService.getOrganization(name);
 
         //then
-        assertEquals(arg, result);
+        assertEquals(argDto, result);
         Mockito.verify(organizationRepository).findByName(name);
     }
 
     @Test
     void when_update_organization_name_which_is_not_unique_then_exception_should_be_thrown() {
-
         //given
         String name1 = "Intive";
         Organization existingOrg1 = new Organization(name1, "Delivery company");
         String name2 = "Tieto";
         Organization existingOrg2 = new Organization(name2, "IT company");
-
+        OrganizationDto updateOrganizationDto = new OrganizationDto(name2, "Delivery company");
         Organization updateOrganization = new Organization(name2, "Delivery company");
         Mockito.when(organizationRepository.findByName(name1)).thenReturn(Optional.of(existingOrg1));
         Mockito.when(organizationRepository.findByName(name2)).thenReturn(Optional.of(existingOrg2));
+        Mockito.when(organizationTransformer.fromDto(updateOrganizationDto)).thenReturn(updateOrganization);
 
         //when
         //then
         assertThrows(IllegalArgumentException.class, () -> {
-           organizationService.updateOrganization(name1, updateOrganization);
+            organizationService.updateOrganization(name1, updateOrganizationDto);
         });
         Mockito.verify(organizationRepository, Mockito.never()).save(updateOrganization);
     }
@@ -182,8 +199,8 @@ class OrganizationServiceTest {
     static class OrganizationServiceTestConfig {
 
         @Bean
-        OrganizationService organizationService(OrganizationRepository organizationRepository) {
-            return new OrganizationService(organizationRepository);
+        OrganizationService organizationService(OrganizationRepository organizationRepository, OrganizationTransformer organizationTransformer) {
+            return new OrganizationService(organizationRepository, organizationTransformer);
         }
     }
 }

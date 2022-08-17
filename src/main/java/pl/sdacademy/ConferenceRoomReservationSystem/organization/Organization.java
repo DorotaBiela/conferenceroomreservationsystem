@@ -1,31 +1,35 @@
 package pl.sdacademy.ConferenceRoomReservationSystem.organization;
 
+import pl.sdacademy.ConferenceRoomReservationSystem.conferenceRoom.ConferenceRoom;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
-interface AddOrganization {
-}
-
-interface UpdateOrganization {
-}
 
 @Entity
 public class Organization {
 
     @Id
     @GeneratedValue
-    private long id;
-
-    @NotBlank(groups = AddOrganization.class)
-    @Size(min = 2, max = 20, groups = {AddOrganization.class, UpdateOrganization.class})
+    private Long id;
     private String name;
     private String description;
 
+    @OneToMany(mappedBy = "organization")
+    private List<ConferenceRoom> conferenceRooms = new ArrayList<>();
+
     public Organization() {
+
+    }
+
+    public Organization(String name) {
+        this.name = name;
     }
 
     public Organization(String name, String description) {
@@ -33,17 +37,32 @@ public class Organization {
         this.description = description;
     }
 
-    public Organization(long id, String name, String description) {
+    public Organization(Long id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
     }
 
-    public long getId() {
+    public Organization(Long id, String name, String description, List<ConferenceRoom> conferenceRooms) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.conferenceRooms = conferenceRooms;
+    }
+
+    public List<ConferenceRoom> getConferenceRooms() {
+        return conferenceRooms;
+    }
+
+    public void setConferenceRooms(List<ConferenceRoom> conferenceRooms) {
+        this.conferenceRooms = conferenceRooms;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -69,6 +88,7 @@ public class Organization {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", conferenceRooms=" + conferenceRooms +
                 '}';
     }
 
@@ -77,7 +97,7 @@ public class Organization {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Organization that = (Organization) o;
-        return id == that.id && Objects.equals(name, that.name) && Objects.equals(description, that.description);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description);
     }
 
     @Override

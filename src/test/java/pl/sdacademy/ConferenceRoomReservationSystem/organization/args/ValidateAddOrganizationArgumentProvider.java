@@ -18,7 +18,7 @@ public class ValidateAddOrganizationArgumentProvider implements ArgumentsProvide
                                           "name": "I"
                                         }
                                         """,
-                        Arrays.asList("size must be between 2 and 20")
+                        new String[]{"size must be between 2 and 20"}
                 ),
                 Arguments.of(
                         """
@@ -27,7 +27,7 @@ public class ValidateAddOrganizationArgumentProvider implements ArgumentsProvide
                                            "name": ""
                                          }
                                          """,
-                        Arrays.asList("size must be between 2 and 20","must not be blank")
+                        new String[]{"size must be between 2 and 20","must not be blank"}
                 ),
                 Arguments.of(
                         """
@@ -35,7 +35,7 @@ public class ValidateAddOrganizationArgumentProvider implements ArgumentsProvide
                                            "description": "IT company"
                                          }
                                          """,
-                        Arrays.asList("must not be blank")
+                        new String[]{"must not be blank"}
                 )
         );
     }

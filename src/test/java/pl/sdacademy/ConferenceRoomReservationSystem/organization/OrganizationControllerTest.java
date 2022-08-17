@@ -22,13 +22,9 @@ import pl.sdacademy.ConferenceRoomReservationSystem.organization.args.SortTypeAr
 import pl.sdacademy.ConferenceRoomReservationSystem.organization.args.ValidateAddOrganizationArgumentProvider;
 import pl.sdacademy.ConferenceRoomReservationSystem.organization.args.ValidateUpdateOrganizationArgumentProvider;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.*;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(OrganizationController.class)
@@ -43,8 +39,8 @@ class OrganizationControllerTest {
     @Test
     void when_add_valid_organization_then_should_be_saved() throws Exception {
         //given
-        Organization organization = new Organization("Intive", "IT company");
-        Organization addedOrganization = new Organization(1L, "Intive", "IT company");
+        OrganizationDto organization = new OrganizationDto("Intive", "IT company");
+        OrganizationDto addedOrganization = new OrganizationDto(1L, "Intive", "IT company");
         Mockito.when(organizationService.addOrganization(organization)).thenReturn(addedOrganization);
 
         //when
@@ -66,7 +62,7 @@ class OrganizationControllerTest {
 
     @ParameterizedTest
     @ArgumentsSource(ValidateAddOrganizationArgumentProvider.class)
-    void when_add_invalid_organization_arg1_then_exception_should_be_thrown_with_arg2_details(String arg1, List<String> arg2) throws Exception {
+    void when_add_invalid_organization_arg1_then_exception_should_be_thrown_with_arg2_details(String arg1, String[] arg2) throws Exception {
         //given
         //when
         //then
@@ -77,13 +73,13 @@ class OrganizationControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(400)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", equalToIgnoringCase("Bad Request")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.details.name", equalTo(arg2)));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.details.name").value(containsInAnyOrder(arg2)));
     }
 
     @Test
     void when_add_already_existing_organization_then_exception_should_be_thrown() throws Exception {
         //given
-        Organization organization = new Organization("Intive", "IT company");
+        OrganizationDto organization = new OrganizationDto("Intive", "IT company");
         Mockito.when(organizationService.addOrganization(organization)).thenThrow(new IllegalArgumentException("organization already exists!"));
 
         //when
@@ -109,14 +105,14 @@ class OrganizationControllerTest {
     void when_delete_existing_organization_then_it_should_be_deleted() throws Exception {
         //given
         String name = "Intive";
-        Organization deletedOrganization = new Organization(1L, name, "IT company");
+        OrganizationDto deletedOrganization = new OrganizationDto(1L, name, "IT company");
         Mockito.when(organizationService.deleteOrganization("Intive")).thenReturn(deletedOrganization);
 
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders.delete("/organizations/" + name)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/organizations/"+name)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", equalTo("Intive")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", equalTo(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description", equalTo("IT company")));
@@ -130,8 +126,8 @@ class OrganizationControllerTest {
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders.delete("/organizations/" + name)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/organizations/"+name)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(404)))
@@ -147,7 +143,7 @@ class OrganizationControllerTest {
 
         //when
         //then
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.put("/organizations/" + existingOrgName)
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.put("/organizations/"+existingOrgName)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(arg1)
         );
@@ -166,12 +162,12 @@ class OrganizationControllerTest {
     void when_update_non_existing_organization_then_exception_should_be_thrown() throws Exception {
         //given
         String name = "Intive";
-        Organization organization = new Organization(name, "TEST");
+        OrganizationDto organization = new OrganizationDto(name, "TEST");
         Mockito.when(organizationService.updateOrganization(name, organization)).thenThrow(new NoSuchElementException("No organization found"));
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders.put("/organizations/" + name)
+        mockMvc.perform(MockMvcRequestBuilders.put("/organizations/"+name)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(
                                 """
@@ -193,13 +189,13 @@ class OrganizationControllerTest {
     void when_update_existing_organization_then_organization_should_be_updated() throws Exception {
         //given
         String name = "Intive";
-        Organization organization = new Organization(name, "IT company");
-        Organization updatedOrganization = new Organization(1L, name, "IT company");
+        OrganizationDto organization = new OrganizationDto(name, "IT company");
+        OrganizationDto updatedOrganization = new OrganizationDto(1L, name, "IT company");
         Mockito.when(organizationService.updateOrganization(name, organization)).thenReturn(updatedOrganization);
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders.put("/organizations/" + name)
+        mockMvc.perform(MockMvcRequestBuilders.put("/organizations/"+name)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(
                                 """
@@ -233,14 +229,14 @@ class OrganizationControllerTest {
         ArgumentCaptor<SortType> sortArgumentCaptor = ArgumentCaptor.forClass(SortType.class);
         Mockito.when(organizationService.getAllOrganizations(arg2)).thenReturn(
                 Arrays.asList(
-                        new Organization("Intive", "IT company"),
-                        new Organization("Tieto", "Delivery company")
+                        new OrganizationDto("Intive", "IT company"),
+                        new OrganizationDto("Tieto", "Delivery company")
                 )
         );
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders.get("/organizations" + arg1)
+        mockMvc.perform(MockMvcRequestBuilders.get("/organizations"+arg1)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)));
         Mockito.verify(organizationService).getAllOrganizations(sortArgumentCaptor.capture());

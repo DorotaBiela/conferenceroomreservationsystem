@@ -1,4 +1,4 @@
-package pl.sdacademy.ConferenceRoomReservationSystem;
+package pl.sdacademy.ConferenceRoomReservationSystem.error;
 
 public class Error<T> {
     private int code;
