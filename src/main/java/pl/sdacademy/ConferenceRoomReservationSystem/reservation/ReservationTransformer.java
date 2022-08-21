@@ -25,5 +25,4 @@ class ReservationTransformer {
         reservation.setConferenceRoom(new ConferenceRoom(reservationDto.getId()));
         return reservation;
     }
-
 }
