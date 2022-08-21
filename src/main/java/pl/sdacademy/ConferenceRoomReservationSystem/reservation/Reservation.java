@@ -7,18 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Objects;
-
-interface AddReservation {
-
-}
-
-interface UpdateReservation {
-
-}
 
 @Entity
 public class Reservation {
@@ -31,12 +21,9 @@ public class Reservation {
     )
     private String id;
 
-    @NotNull(groups = AddReservation.class)
     private LocalDateTime startDate;
-    @NotNull(groups = AddReservation.class)
     private LocalDateTime endDate;
 
-    @Size(min = 2, max = 20, groups = { AddReservation.class, UpdateReservation.class })
     private String reservationName;
 
     @ManyToOne

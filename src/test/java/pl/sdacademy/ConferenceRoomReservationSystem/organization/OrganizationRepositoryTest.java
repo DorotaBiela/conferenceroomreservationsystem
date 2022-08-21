@@ -7,7 +7,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import pl.sdacademy.ConferenceRoomReservationSystem.organization.args.GetAllOrganizationArgumentProvider;
 import pl.sdacademy.ConferenceRoomReservationSystem.organization.args.GetByIdOrganizationArgumentProvider;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @DataJpaTest
 class OrganizationRepositoryTest {
 
